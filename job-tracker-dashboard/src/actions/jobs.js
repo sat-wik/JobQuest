@@ -1,16 +1,23 @@
+import { FETCH_JOBS, ADD_JOB, UPDATE_JOB_STATUS, DELETE_JOB } from './types';
+
 export const setJobs = (jobs) => ({
-    type: 'SET_JOBS',
+    type: FETCH_JOBS,
     payload: jobs
 });
 
 export const addJob = (job) => ({
-    type: 'ADD_JOB',
+    type: ADD_JOB,
     payload: job
 });
 
 export const updateJobStatus = (id, updatedJob) => ({
-    type: 'UPDATE_JOB_STATUS',
+    type: UPDATE_JOB_STATUS,
     payload: { id, updatedJob }
+});
+
+export const deleteJob = (id) => ({
+    type: DELETE_JOB,
+    payload: id
 });
 
 // Async action creators using thunk
@@ -51,11 +58,20 @@ export const changeJobStatus = (id, status) => (dispatch) => {
     .then(response => response.json())
     .then(updatedJob => {
         dispatch({
-            type: 'UPDATE_JOB_STATUS',
+            type: UPDATE_JOB_STATUS,
             payload: { id, updatedJob }
         });
     })
     .catch(error => console.error('Update error:', error));
 };
 
-
+// Action to delete job
+export const removeJob = (id) => (dispatch) => {
+    fetch(`http://localhost:5000/jobs/${id}`, {
+        method: 'DELETE',
+    })
+    .then(() => {
+        dispatch(deleteJob(id));
+    })
+    .catch(error => console.error('Delete error:', error));
+};

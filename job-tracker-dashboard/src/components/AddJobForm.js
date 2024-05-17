@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { addJob } from '../actions/jobs';
+import { createJob } from '../actions/jobs';
 
 const AddJobForm = () => {
   const [title, setTitle] = useState('');
@@ -10,21 +10,21 @@ const AddJobForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!title || !company) {
-      alert("Please fill in both the job title and company.");
       return;
     }
     const newJob = {
       title,
       company,
-      status: 'Applied'
+      status: 'Applied',
+      dateApplied: new Date().toISOString().split('T')[0], // Added dateApplied
     };
-    dispatch(addJob(newJob));
+    dispatch(createJob(newJob));
     setTitle('');
     setCompany('');
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-8">
+    <form onSubmit={handleSubmit} className="add-job-form w-full">
       <div className="mb-4">
         <label htmlFor="title" className="block text-gray-700">Job Title</label>
         <input
@@ -47,7 +47,8 @@ const AddJobForm = () => {
       </div>
       <button
         type="submit"
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        className={`w-full text-white font-medium py-2 px-4 rounded transition duration-300 ${title && company ? 'bg-blue-500 hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed'}`}
+        disabled={!title || !company}
       >
         Add Job
       </button>

@@ -61,5 +61,17 @@ app.patch('/jobs/:id', async (req, res) => {
   }
 });
 
+app.delete('/jobs/:id', async (req, res) => {
+  try {
+    const deletedJob = await Job.findByIdAndDelete(req.params.id);
+    if (!deletedJob) {
+      return res.status(404).json({ message: 'Job not found' });
+    }
+    res.status(204).end();
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting job', error });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

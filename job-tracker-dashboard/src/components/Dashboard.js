@@ -1,24 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { fetchJobs, changeJobStatus } from '../actions/jobs';
+import { fetchJobs, changeJobStatus, removeJob } from '../actions/jobs';
 import FilterComponent from './FilterComponent';
 import StatusSlider from './StatusSlider';
 import AddJobForm from './AddJobForm';
+import SearchBar from './SearchBar'; // Import SearchBar component
 import Sidebar from './Sidebar'; // Import Sidebar component
+import { FaTrash } from 'react-icons/fa'; // Import trash icon
 
-const Dashboard = ({ jobs, fetchJobs, changeJobStatus }) => {
+const Dashboard = ({ jobs, fetchJobs, changeJobStatus, removeJob }) => {
   const [filteredJobs, setFilteredJobs] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchJobs();
   }, [fetchJobs]);
 
   useEffect(() => {
-    setFilteredJobs(jobs);
-  }, [jobs]);
+    filterJobs('All', searchTerm);
+  }, [jobs, searchTerm]);
 
   const handleStatusChange = (id, newStatus) => {
     changeJobStatus(id, newStatus);
+  };
+
+  const handleDeleteJob = (id) => {
+    removeJob(id);
   };
 
   const getNextStatus = (currentStatus) => {
@@ -28,11 +35,29 @@ const Dashboard = ({ jobs, fetchJobs, changeJobStatus }) => {
   };
 
   const onFilterChange = (status) => {
-    if (status === "All") {
-      setFilteredJobs(jobs);
-    } else {
-      setFilteredJobs(jobs.filter(job => job.status === status));
+    filterJobs(status, searchTerm);
+  };
+
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+    filterJobs('All', term);
+  };
+
+  const filterJobs = (status, searchTerm) => {
+    let filtered = jobs;
+
+    if (status !== 'All') {
+      filtered = filtered.filter(job => job.status === status);
     }
+
+    if (searchTerm) {
+      filtered = filtered.filter(job =>
+        job.title.toLowerCase().includes(searchTerm) ||
+        job.company.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    setFilteredJobs(filtered);
   };
 
   return (
@@ -42,10 +67,13 @@ const Dashboard = ({ jobs, fetchJobs, changeJobStatus }) => {
         <div className="dashboard-container">
           <h1 className="text-3xl font-bold text-center mb-8">Your Submitted Applications</h1>
           <AddJobForm />
-          <FilterComponent onFilterChange={onFilterChange} />
-          <div className="grid grid-cols-1 gap-6">
+          <div className="search-filter-container">
+            <FilterComponent onFilterChange={onFilterChange} />
+            <SearchBar onSearch={handleSearch} />
+          </div>
+          <div className="grid grid-cols-1 gap-6 w-full">
             {filteredJobs.map(job => (
-              <div key={job._id} className="job-card">
+              <div key={job._id} className="job-card relative">
                 <h5 className="job-card-title">{job.title}</h5>
                 <p className="job-card-company">{job.company}</p>
                 <p className="job-card-details">Applied on: {job.dateApplied}</p>
@@ -56,6 +84,12 @@ const Dashboard = ({ jobs, fetchJobs, changeJobStatus }) => {
                 >
                   Next Status
                 </button>
+                {(job.status === "Offer" || job.status === "Rejected") && (
+                  <FaTrash
+                    className="absolute top-4 right-4 text-red-500 cursor-pointer"
+                    onClick={() => handleDeleteJob(job._id)}
+                  />
+                )}
               </div>
             ))}
           </div>
@@ -71,7 +105,8 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = {
   fetchJobs,
-  changeJobStatus
+  changeJobStatus,
+  removeJob
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);

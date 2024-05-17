@@ -87,6 +87,7 @@ code {
   flex: 1;
   display: flex;
   justify-content: center;
+  min-height: 100vh; /* Ensure the background covers the full viewport height */
 }
 
 .sidebar {
@@ -94,20 +95,30 @@ code {
   background: white;
   height: 100vh;
   position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
 }
 
 .dashboard-container {
-  max-width: 800px;
+  max-width: 90%; /* Adjusted for wider dashboard */
   width: 100%;
   padding: 20px;
+  margin-left: 250px; /* Offset for the sidebar */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center the content horizontally */
 }
 
-.job-card {
+.job-card, .add-job-form {
   background: rgba(255, 255, 255, 0.9);
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
   margin-bottom: 20px;
+  position: relative; /* Added to position trash icon */
+  width: 100%;
+  max-width: 100%; /* Adjusted for full-width cards */
 }
 
 .job-card-title {
@@ -162,4 +173,61 @@ code {
 .google-btn .text {
   color: #757575;
   font-weight: 500;
+}
+
+.fa-trash {
+  color: #ff0000; /* Red color for trash icon */
+  cursor: pointer;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 200px;
+  }
+
+  .dashboard-container {
+    margin-left: 200px; /* Adjust offset for the sidebar on smaller screens */
+  }
+
+  .job-card, .add-job-form {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+
+  .dashboard-container {
+    margin-left: 0;
+    padding-top: 20px;
+  }
+}
+
+.search-filter-container {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.search-bar {
+  width: 50%;
+  max-width: 400px;
+  padding: 10px;
+  border: 1px solid #dcdcdc;
+  border-radius: 4px;
+  outline: none;
+  transition: box-shadow 0.3s ease;
+}
+
+.search-bar:focus {
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.25);
 }
