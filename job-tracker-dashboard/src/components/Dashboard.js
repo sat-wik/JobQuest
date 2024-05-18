@@ -5,20 +5,23 @@ import FilterComponent from './FilterComponent';
 import StatusSlider from './StatusSlider';
 import AddJobForm from './AddJobForm';
 import SearchBar from './SearchBar'; // Import SearchBar component
+import DateRangePicker from './DateRangePicker'; // Import DateRangePicker component
 import Sidebar from './Sidebar'; // Import Sidebar component
 import { FaTrash } from 'react-icons/fa'; // Import trash icon
 
 const Dashboard = ({ jobs, fetchJobs, changeJobStatus, removeJob }) => {
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
   useEffect(() => {
     fetchJobs();
   }, [fetchJobs]);
 
   useEffect(() => {
-    filterJobs('All', searchTerm);
-  }, [jobs, searchTerm]);
+    filterJobs('All', searchTerm, startDate, endDate);
+  }, [jobs, searchTerm, startDate, endDate]);
 
   const handleStatusChange = (id, newStatus) => {
     changeJobStatus(id, newStatus);
@@ -35,15 +38,21 @@ const Dashboard = ({ jobs, fetchJobs, changeJobStatus, removeJob }) => {
   };
 
   const onFilterChange = (status) => {
-    filterJobs(status, searchTerm);
+    filterJobs(status, searchTerm, startDate, endDate);
   };
 
   const handleSearch = (term) => {
     setSearchTerm(term);
-    filterJobs('All', term);
+    filterJobs('All', term, startDate, endDate);
   };
 
-  const filterJobs = (status, searchTerm) => {
+  const handleDateRangeChange = (start, end) => {
+    setStartDate(start);
+    setEndDate(end);
+    filterJobs('All', searchTerm, start, end);
+  };
+
+  const filterJobs = (status, searchTerm, startDate, endDate) => {
     let filtered = jobs;
 
     if (status !== 'All') {
@@ -55,6 +64,13 @@ const Dashboard = ({ jobs, fetchJobs, changeJobStatus, removeJob }) => {
         job.title.toLowerCase().includes(searchTerm) ||
         job.company.toLowerCase().includes(searchTerm)
       );
+    }
+
+    if (startDate && endDate) {
+      filtered = filtered.filter(job => {
+        const appliedDate = new Date(job.dateApplied);
+        return appliedDate >= startDate && appliedDate <= endDate;
+      });
     }
 
     setFilteredJobs(filtered);
@@ -70,6 +86,7 @@ const Dashboard = ({ jobs, fetchJobs, changeJobStatus, removeJob }) => {
           <div className="search-filter-container">
             <FilterComponent onFilterChange={onFilterChange} />
             <SearchBar onSearch={handleSearch} />
+            <DateRangePicker onDateRangeChange={handleDateRangeChange} />
           </div>
           <div className="grid grid-cols-1 gap-6 w-full">
             {filteredJobs.map(job => (

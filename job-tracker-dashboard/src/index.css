@@ -23,6 +23,13 @@ code {
   display: flex;
   justify-content: center;
   align-items: center;
+  animation: gradientBackground 15s ease infinite;
+}
+
+@keyframes gradientBackground {
+  0% { background: linear-gradient(135deg, #667eea, #764ba2); }
+  50% { background: linear-gradient(135deg, #764ba2, #667eea); }
+  100% { background: linear-gradient(135deg, #667eea, #764ba2); }
 }
 
 .shape {
@@ -70,6 +77,106 @@ code {
   100% {
     transform: translateY(0);
   }
+}
+
+.auth-container {
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  padding: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  animation: fadeIn 1.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-header {
+  font-size: 2em;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 15px;
+  margin: 10px 0;
+  border: 1px solid #dcdcdc;
+  border-radius: 5px;
+  outline: none;
+  transition: box-shadow 0.3s ease;
+}
+
+.auth-input:focus {
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.25);
+}
+
+.auth-button, .google-btn {
+  width: 100%;
+  padding: 15px;
+  margin: 20px 0;
+  background-color: #667eea;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.auth-button:hover {
+  background-color: #5765d9;
+  transform: scale(1.05);
+}
+
+.google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  color: #757575;
+  border: 1px solid #dcdcdc;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 15px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-decoration: none;
+  margin: 0px 0;
+}
+
+.google-btn:hover {
+  background-color: #dfdfdf;
+  transform: scale(1.05);
+}
+
+.google-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+}
+
+.google-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.google-btn .text {
+  color: #757575;
+  font-weight: 500;
 }
 
 .card-container {
@@ -138,43 +245,6 @@ code {
   margin-bottom: 10px;
 }
 
-.google-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: white;
-  color: #757575;
-  border: 1px solid #dcdcdc;
-  border-radius: 4px;
-  font-size: 16px;
-  font-weight: 500;
-  padding: 10px 20px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  text-decoration: none;
-}
-
-.google-btn:hover {
-  background-color: #f7f7f7;
-}
-
-.google-icon-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 10px;
-}
-
-.google-icon {
-  width: 18px;
-  height: 18px;
-}
-
-.google-btn .text {
-  color: #757575;
-  font-weight: 500;
-}
-
 .fa-trash {
   color: #ff0000; /* Red color for trash icon */
   cursor: pointer;
@@ -218,9 +288,9 @@ code {
   margin-bottom: 20px;
 }
 
-.search-bar {
-  width: 50%;
-  max-width: 400px;
+.search-bar, .filter-component, .date-range-picker {
+  flex: 1; /* Each component will take equal space */
+  margin: 0 10px; /* Add some space between components */
   padding: 10px;
   border: 1px solid #dcdcdc;
   border-radius: 4px;
@@ -228,6 +298,6 @@ code {
   transition: box-shadow 0.3s ease;
 }
 
-.search-bar:focus {
+.search-bar:focus, .filter-component:focus, .date-range-picker:focus {
   box-shadow: 0 0 10px rgba(0, 123, 255, 0.25);
 }

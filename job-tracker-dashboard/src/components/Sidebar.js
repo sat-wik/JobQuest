@@ -21,7 +21,7 @@ const Sidebar = () => {
   const handleLogout = async () => {
     try {
       await auth.signOut();
-      navigate('/login'); // Redirect to login page after logout
+      navigate('/signin'); // Redirect to login page after logout
     } catch (error) {
       console.error('Error logging out:', error);
     }
