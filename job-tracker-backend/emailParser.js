@@ -1,42 +1,16 @@
 const gmail = require('./gmailService');
-const OpenAI = require("openai");
+const { spawn } = require('child_process');
 require('dotenv').config();
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  organization: process.env.OPENAI_ORGANIZATION,  // Add this to your .env file if you have an organization
-  project: process.env.OPENAI_PROJECT_ID  // Add this to your .env file if needed
-});
 
 // Function to delay execution
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-// Function to handle exponential backoff
-const exponentialBackoff = async (fn, retries = 5, delayMs = 1000) => {
-  for (let i = 0; i < retries; i++) {
-    try {
-      return await fn();
-    } catch (error) {
-      if (i === retries - 1 || !isRetryableError(error)) {
-        throw error;
-      }
-      const backoffTime = delayMs * Math.pow(2, i);
-      console.log(`Retrying after ${backoffTime}ms...`);
-      await delay(backoffTime);
-    }
-  }
-};
-
-const isRetryableError = (error) => {
-  return error.code === 'insufficient_quota';
-};
 
 const getEmails = async () => {
   try {
     const res = await gmail.users.messages.list({
       userId: 'me',
       q: 'subject:("job application" OR "application status" OR "regarding your application" OR "application update")',
-      maxResults: 5  // Limit the number of emails retrieved to 5
+      //maxResults: 5  // Limit the number of emails retrieved to 5
     });
     console.log('Gmail API response:', res);  // Log the full response
     if (res.data && res.data.messages) {
@@ -59,6 +33,15 @@ const getEmailContent = async (messageId) => {
       id: messageId,
     });
     const message = res.data;
+
+    // Check the sender's email address
+    const headers = message.payload.headers;
+    const fromHeader = headers.find(header => header.name === 'From');
+    if (fromHeader && fromHeader.value.includes(process.env.MY_EMAIL_ADDRESS)) {
+      console.log(`Skipping email from self: ${fromHeader.value}`);
+      return null;
+    }
+
     let emailBody = '';
     if (message.payload.parts) {
       for (const part of message.payload.parts) {
@@ -78,36 +61,19 @@ const getEmailContent = async (messageId) => {
 };
 
 const parseStatusFromEmail = async (emailContent) => {
-  const prompt = `
-    Analyze the following email content and determine the job application status:
-    Email: "${emailContent}"
-    The status can be one of the following: Interviewing, Offered, Rejected, Unknown.
-    Examples of relevant email phrases:
-    - "As a next step, I have sent you an invitation to complete a coding exercise"
-    - "We are not moving forward with your application"
-    - "The team has decided to move forward with applicants they feel are a closer fit"
-    Based on this analysis, provide the status.
-  `;
+  return new Promise((resolve, reject) => {
+    const process = spawn('python3', ['parse_email.py', emailContent]);
 
-  const makeRequest = async () => {
-    const response = await openai.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "system", content: prompt }],
-      max_tokens: 50,
-      temperature: 0.7,
+    process.stdout.on('data', (data) => {
+      console.log(`Parsed status: ${data}`);
+      resolve(data.toString().trim());
     });
 
-    return response.choices[0].message.content.trim();
-  };
-
-  try {
-    const status = await exponentialBackoff(makeRequest);
-    console.log(`Parsed status: ${status}`);
-    return status;
-  } catch (error) {
-    console.error('Error parsing email content:', error);
-    throw error;
-  }
+    process.stderr.on('data', (data) => {
+      console.error(`Error parsing email content: ${data}`);
+      reject(data.toString());
+    });
+  });
 };
 
 const processEmails = async () => {
@@ -116,13 +82,16 @@ const processEmails = async () => {
     const emailContents = [];
     for (const email of emails) {
       const emailContent = await getEmailContent(email.id);
-      emailContents.push(emailContent);
+      if (emailContent) {
+        emailContents.push(emailContent);
+      }
     }
 
     for (const content of emailContents) {
       await delay(1000);  // Delay between each request to avoid hitting the rate limit
       const status = await parseStatusFromEmail(content);
-      console.log(`Parsed status for email: ${status}`);
+      console.log(`Email Content: ${content}`);
+      console.log(`Parsed Status: ${status}`);
     }
   } catch (error) {
     console.error('Error processing emails:', error);
