@@ -28,6 +28,8 @@ const jobSchema = new mongoose.Schema({
 });
 const Job = mongoose.model('Job', jobSchema);
 
+const { processEmails } = require('./emailParser');
+
 // API routes
 app.get('/jobs', async (req, res) => {
   const jobs = await Job.find();
@@ -70,6 +72,15 @@ app.delete('/jobs/:id', async (req, res) => {
     res.status(204).end();
   } catch (error) {
     res.status(500).json({ message: 'Error deleting job', error });
+  }
+});
+
+app.post('/update-status-from-email', async (req, res) => {
+  try {
+    await processEmails();
+    res.json({ message: 'Job statuses updated from emails' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating job statuses', error });
   }
 });
 
